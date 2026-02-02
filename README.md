@@ -75,7 +75,7 @@ AL1-4 VMs:
 sudo alman define --al 1 --name evil-AL1-vm
 sudo alman define --al 2 --name evil-AL2-vm
 sudo alman define --al 3 --name evil-AL1-vm
-sudo alman define --al 4 --name evil-AL1-vm 
+sudo alman define --al 4 --name evil-AL1-vm
 ```
 
 ## Building the genuine, unmodified VMs
@@ -119,7 +119,7 @@ AL1-4 VMs:
 sudo alman define --al 1 --name genuine-AL1-vm
 sudo alman define --al 2 --name genuine-AL2-vm
 sudo alman define --al 3 --name genuine-AL3-vm
-sudo alman define --al 4 --name genuine-AL4-vm 
+sudo alman define --al 4 --name genuine-AL4-vm
 ```
 
 ## Building the genuine, modified VMs
@@ -320,6 +320,41 @@ Currently, the webfrontend are only accessible from the host itself. You can exp
 * 50003: evil-AL3-vm
 * 50004: evil-AL4-vm
 
-Allow the ports on the hosts.
- 
-cont from other machine
+Enable port forwarding:
+
+```bash
+sudo iptables -A INPUT -p tcp --dport 9443 -j ACCEPT
+```
+
+Allow the ports on the hosts. Edit these variables and invoke the scommands below for each VM
+
+```bash
+GUEST_PORT=9443
+HOST_PORT=50003
+GUEST_IP=<GUESTIP>
+HOST_IP=<HOSTIP>
+```
+
+```bash
+sudo iptables -t nat -A PREROUTING \
+  -d ${HOST_IP} -p tcp --dport ${HOST_PORT} \
+  -j DNAT --to-destination "${GUEST_IP}:${GUEST_PORT}"
+
+sudo iptables -t nat -A OUTPUT \
+  -d ${HOST_IP} -p tcp --dport ${HOST_PORT} \
+  -j DNAT --to-destination "${GUEST_IP}:${GUEST_PORT}"
+
+sudo iptables -I FORWARD 1 \
+  -i ens10f0 -o virbr0 -p tcp \
+  -d "${GUEST_IP}" --dport "${GUEST_PORT}" \
+  -m state --state NEW,ESTABLISHED,RELATED \
+  -j ACCEPT
+
+sudo iptables -I FORWARD 1 \
+  -i virbr0 -o ens10f0 -p tcp \
+  -s "${GUEST_IP}" --sport "${GUEST_PORT}" \
+  -m state --state ESTABLISHED,RELATED \
+  -j ACCEPT
+```
+
+Your VMs should now be reachable via the host network. You can now use the demonstrator to show the issue with not achieving AL4 live.
