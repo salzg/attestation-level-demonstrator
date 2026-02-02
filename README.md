@@ -326,7 +326,7 @@ Enable port forwarding:
 sudo iptables -A INPUT -p tcp --dport 9443 -j ACCEPT
 ```
 
-Allow the ports on the hosts. Edit these variables and invoke the scommands below for each VM
+Allow the ports on the hosts. Edit these variables and invoke the scommands below for each VM. You might need to adjust `vibr0` and `ens10f0` to match the bridge and the network interface you have on your system.
 
 ```bash
 GUEST_PORT=9443
