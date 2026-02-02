@@ -11,7 +11,7 @@ set -euo pipefail
 # echo "built-with-build-extra: EVIL DEPLOYMENT" >/etc/alman-build-extra
 
 git clone https://github.com/salzg/simple-attestation-verifier-service /opt/simple-attestation-verifier-service
-cd /opt/simple-attestation-verifier-service
+cd /opt/simple-attestation-verifier-service/client
 cat > client_config.json <<'EOF'
 {
   "server_ip": "<INSERT SERVER IP HERE>",
